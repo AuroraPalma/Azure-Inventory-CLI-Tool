@@ -16,6 +16,7 @@ import (
 type Resource struct {
     Name string
     Group string
+	Type string
 }
 
 // Returns an Azure credential for authentication
@@ -45,16 +46,20 @@ func ListResourcesSub(cred azcore.TokenCredential, subscriptionID string) ([]Res
         }
         for _, resource := range page.Value {
 			resourceGroup := ""
+			resourceType := ""
 			if resource.ID != nil {
 				parts, err := arm.ParseResourceID(*resource.ID)
+				type_resource , err := arm.ParseResourceType(*resource.Type)
 				if err != nil {
 					panic(fmt.Sprintf("failed to parse resource ID: %v", err))
 				}
 				resourceGroup = parts.ResourceGroupName
+				resourceType = type_resource.Type
 			}
             resources = append(resources, Resource{
 				Name:  *resource.Name,
 				Group: resourceGroup,
+				Type:  resourceType,
 			})
         }
     }
@@ -72,10 +77,10 @@ func SaveResourcesToCSV(resources []Resource, filename string) error {
 	csvwriter := csv.NewWriter(csvFile)
 	defer csvwriter.Flush()
 
-	csvwriter.Write([]string{"Name", "Group"})
+	csvwriter.Write([]string{"Name", "Group", "Type"}) // Write header row
 
 	for _, resource := range resources {
-		err := csvwriter.Write([]string{resource.Name, resource.Group})
+		err := csvwriter.Write([]string{resource.Name, resource.Group, resource.Type})
 		if err != nil {
 			return fmt.Errorf("failed to write to CSV file: %v", err)
 		}
