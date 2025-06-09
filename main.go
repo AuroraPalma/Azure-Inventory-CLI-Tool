@@ -8,6 +8,8 @@ import (
     "azure-inventory-cli-tool/pkg"
 )
 
+// Main function to load environment variables and list Azure resources
+
 func main() {
     err := godotenv.Load()
     if err != nil {
@@ -23,9 +25,8 @@ func main() {
     if err != nil {
         log.Fatalf("Failed to list resources: %v", err)
     }
-
-    for _, name := range resources {
-        log.Println(name)
+    err = pkg.SaveResourcesToCSV(resources, "resources.csv")
+    if err != nil {
+        log.Fatalf("Failed to save resources to CSV: %v", err)
     }
-
 }

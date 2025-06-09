@@ -4,11 +4,19 @@ import (
     "context"
     "fmt"
     "log"
+	"encoding/csv"
+	"os"
 
     "github.com/Azure/azure-sdk-for-go/sdk/azcore"
     "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
     "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 )
+
+type Resource struct {
+    Name string
+    Group string
+}
 
 // Returns an Azure credential for authentication
 func GetAzureClient() (azcore.TokenCredential, error) {
@@ -20,7 +28,7 @@ func GetAzureClient() (azcore.TokenCredential, error) {
 }
 
 // Lists resource names in a subscription
-func ListResourcesSub(cred azcore.TokenCredential, subscriptionID string) ([]string, error) {
+func ListResourcesSub(cred azcore.TokenCredential, subscriptionID string) ([]Resource, error) {
     client, err := armresources.NewClient(subscriptionID, cred, nil)
     if err != nil {
         return nil, fmt.Errorf("failed to create resources client: %v", err)
@@ -28,15 +36,50 @@ func ListResourcesSub(cred azcore.TokenCredential, subscriptionID string) ([]str
 	ctx := context.Background()
 
     pager := client.NewListPager(nil)
-    var resources []string
+    var resources []Resource
+	fmt.Println("Listing resources in subscription:", subscriptionID)
     for pager.More() {
         page, err := pager.NextPage(ctx)
         if err != nil {
             return nil, fmt.Errorf("failed to get next page of resources: %v", err)
         }
         for _, resource := range page.Value {
-            resources = append(resources, *resource.Name)
+			resourceGroup := ""
+			if resource.ID != nil {
+				parts, err := arm.ParseResourceID(*resource.ID)
+				if err != nil {
+					panic(fmt.Sprintf("failed to parse resource ID: %v", err))
+				}
+				resourceGroup = parts.ResourceGroupName
+			}
+            resources = append(resources, Resource{
+				Name:  *resource.Name,
+				Group: resourceGroup,
+			})
         }
     }
+	fmt.Printf("Total resources found: %d\n", len(resources))
     return resources, nil
+}
+
+func SaveResourcesToCSV(resources []Resource, filename string) error {
+	csvFile, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to create CSV file: %v", err)
+	}
+	defer csvFile.Close()
+
+	csvwriter := csv.NewWriter(csvFile)
+	defer csvwriter.Flush()
+
+	csvwriter.Write([]string{"Name", "Group"})
+
+	for _, resource := range resources {
+		err := csvwriter.Write([]string{resource.Name, resource.Group})
+		if err != nil {
+			return fmt.Errorf("failed to write to CSV file: %v", err)
+		}
+	}
+	log.Println("Resources have been written to resources.csv")
+	return nil
 }
