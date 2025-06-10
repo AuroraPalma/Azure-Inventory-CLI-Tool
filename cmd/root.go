@@ -10,7 +10,6 @@ import (
     "github.com/spf13/cobra"
 )
 
-var version = "1.0.1"
 var subscriptionID string
 var envfile string
 
@@ -31,7 +30,6 @@ var rootCmd = &cobra.Command{
 	Use:   "azure-inventory-cli-tool",
 	Short: "A CLI tool to list Azure resources in a subscription and save to CSV",
 	Long:    `azure-inventory-cli-tool is a command-line tool that lists all resources in your Azure subscription and exports them to a CSV file.`,
-    Version: version,
 	Example: `azure-inventory-cli-tool --subscription-id <your-subscription-id> --env-file <path-to-env-file>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := godotenv.Load(envfile)
