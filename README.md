@@ -1,26 +1,30 @@
 # Azure-Inventory-CLI-Tool
-Azure Resource Inventory CLI Tool: Lists Azure resources across subscriptions
+Azure Resource Inventory CLI Tool: Lists Azure resources given a subscription ID and export to CSV file
 
-1. Initialize the Go module (replace azure-inventory-cli-tool with your desired module name, usually your repo path)
+## Requirements
 
-```bash
-go mod init azure-inventory-cli-tool
+- Create Service Principal or Manage Identity to login in Azure
+- Assign at least Reader role on your subscription
+- Create .env file with your Azure credenctials, for example using a Service Principal:
+
+```
+AZURE_CLIENT_ID=xxxxx
+AZURE_CLIENT_SECRET=xxxxx
+AZURE_TENANT_ID=xxxxx
 ```
 
-2. Add dependencies (this will also create/update go.sum):
+- Install the binary on your computer with go:
 
 ```bash
-go get github.com/Azure/azure-sdk-for-go/sdk/azidentity
-go get github.com/Azure/azure-sdk-for-go/sdk/azcore
-go get github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources
+go install github.com/AuroraPalma/Azure-Inventory-CLI-Tool@latest
 ```
 
-Now, go.mod and go.sum will be created and managed automatically.
+or 
 
-Summary:
+- Download the binary and save in a folder like C:\azure-inventory-cli-tool, add that path to your system PATH (via System Properties > Environment Variables)
+
+## Usage
 
 ```bash
-go.mod tracks your module and its requirements.
-go.sum ensures dependency integrity.
-Use go mod tidy anytime to clean up unused dependencies.
+azure-inventory-cli-tool --subscription-id <your-subscription-id> --env-file <your path to .env file>
 ```
