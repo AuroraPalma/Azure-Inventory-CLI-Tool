@@ -1,5 +1,7 @@
 # Azure-Inventory-CLI-Tool
-Azure Resource Inventory CLI Tool: Lists Azure resources given a subscription ID and export to CSV file
+Azure Resource Inventory CLI Tool: 
+
+- [ x ] Lists Azure resources given a subscription ID and export to CSV file
 
 ## Requirements
 
